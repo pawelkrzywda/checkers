@@ -1,0 +1,27 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.10'
+}
+
+javafx {
+    version = "18.0.1"
+    modules = [ 'javafx.controls' ]
+}
+
+group = 'com.checkers'
+version = '0.0.1-SNAPSHOT'
+mainClassName = 'com.checkers.Checkers'
+sourceCompatibility = '18'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+  //  implementation 'org.springframework.boot:spring-boot-starter-web'
+    //testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

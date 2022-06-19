@@ -1,48 +1,32 @@
 package com.checkers;
 import javafx.application.Application;
 import javafx.beans.Observable;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Checkers extends Application implements MouseListener {
 
-    /*EventHandler<ActionEvent> mouseEventHandler(){
-        return event -> {
-            Node node = (Node) event.getTarget();
-            int row = GridPane.getRowIndex(node);
-            int column = GridPane.getColumnIndex(node);
-            System.out.println("Column: " + column + " , row: " + row);
-        };
-    }
-
-    Node getNodeByCoordinate(GridPane grid, Integer row, Integer column) {
+    Node getNodeByCoordinate(GridPane grid, int column, int row) {
         for (Node node : grid.getChildren()) {
-            if(GridPane.getColumnIndex(node) == row && GridPane.getColumnIndex(node) == column){
+            if(GridPane.getColumnIndex(node) == column && GridPane.getRowIndex(node) == row){
                 return node;
             }
         }
         return null;
-    }*/
+    }
 
     private Image imageback = new Image("file:src/main/resources/board.png");
 
@@ -108,21 +92,16 @@ public class Checkers extends Application implements MouseListener {
         piecesList.addAll(blue1Piece, blue2Piece, blue3Piece, blue4Piece, blue5Piece, blue6Piece, blue7Piece,
                 blue8Piece, blue9Piece, blue10Piece, blue11Piece, blue12Piece);
 
-        for(int i=0;i<8;i++){
-            if(i%2 == 0){
-                piecesList.add(new Piece("empty", i,0, false));
-                piecesList.add(new Piece("empty", i,2, false));
-                piecesList.add(new Piece("empty", i,3, false));
-                piecesList.add(new Piece("empty", i,4, false));
-                piecesList.add(new Piece("empty", i,6, false));
-            } else {
-                piecesList.add(new Piece("empty", i,1, false));
-                piecesList.add(new Piece("empty", i,3, false));
-                piecesList.add(new Piece("empty", i,4, false));
-                piecesList.add(new Piece("empty", i,5, false));
-                piecesList.add(new Piece("empty", i,7, false));
-            }
-        }
+        Piece empty1Piece = new Piece("empty", 0,3, false);
+        Piece empty2Piece = new Piece("empty", 1,4, false);
+        Piece empty3Piece = new Piece("empty", 2,3, false);
+        Piece empty4Piece = new Piece("empty", 3,4, false);
+        Piece empty5Piece = new Piece("empty", 4,3, false);
+        Piece empty6Piece = new Piece("empty", 5,4, false);
+        Piece empty7Piece = new Piece("empty", 6,3, false);
+        Piece empty8Piece = new Piece("empty", 7,4, false);
+        piecesList.addAll(empty1Piece, empty2Piece, empty3Piece, empty4Piece, empty5Piece, empty6Piece,
+                empty7Piece, empty8Piece);
 
         for(Piece piece : piecesList){
             grid.add(piece.getPiece(), piece.getColumn(), piece.getRow(),1,1);
@@ -144,7 +123,6 @@ public class Checkers extends Application implements MouseListener {
             grid.getRowConstraints().add(row);
         }
 
-
         piecesList.addListener(new ListChangeListener<Piece>() {
             @Override
             public void onChanged(ListChangeListener.Change<? extends Piece> c) {
@@ -155,20 +133,29 @@ public class Checkers extends Application implements MouseListener {
 
                         changeType = areAllInactive(piecesList);
                         Piece currentPiece = null;
+                        Piece bluePiece = null;
                         List<Piece> moves = new LinkedList<>();
                         for (Piece piece : piecesList) {
-                            if(piece.getIsActive().getValue()==true){
+                            if(piece.getIsActive().getValue()==true && piece.getColor()=="blue"){
+                                bluePiece = piece;
+                            }
+                            if(piece.getIsActive().getValue()==true && piece.getColor()=="empty"){
                                 currentPiece = piece;
                             }
                         }
-                        if(currentPiece!=null){
+
+                        if(bluePiece!=null && currentPiece==null){
+                            moves = findMoves(bluePiece, piecesList);
+                        } else if(currentPiece!=null){
                             moves = findMoves(currentPiece, piecesList);
                         }
+
                         if(changeType==1 && moves.size()==0){
                             changeType=3;
                         }
 
                         if (changeType == 1) {
+                            System.out.println("Change type " + changeType);
                             //disable other pieces
                             for (Piece piece : piecesList) {
                                 if (piece.getIsActive().getValue() == false && piece.getColor()=="blue") {
@@ -176,7 +163,7 @@ public class Checkers extends Application implements MouseListener {
                                 }
                             }
                             //show possible moves
-                            if(currentPiece != null) {
+                            if(currentPiece == null) {
                                 for(Piece move : moves) {
                                     for (Piece piece : piecesList) {
                                         if(move.equals(piece)){
@@ -188,7 +175,7 @@ public class Checkers extends Application implements MouseListener {
                         }
 
                         if (changeType == 2) {
-                            System.out.println("Disabling pieces etc.");
+                            System.out.println("Change type " + changeType);
                             //enable blue pieces for different move
                             for (Piece piece : piecesList) {
                                 if (piece.getIsActive().getValue() == false && piece.getColor() == "blue") {
@@ -201,34 +188,32 @@ public class Checkers extends Application implements MouseListener {
                         }
 
                         if(changeType==3){
-                            System.out.println("no more possible moves");
-                            System.out.println("current piece column:" + currentPiece.getColumn());
+                            System.out.println("Change type " + changeType);
                             int tempcolumn=currentPiece.getColumn();
                             int temprow=currentPiece.getRow();
-                            for(Piece piece : piecesList){
-                                if(piece.getIsActive().getValue()==true && piece.getColor()=="blue"){
-                                    currentPiece.setColumn(piece.getColumn());
-                                    currentPiece.setRow(piece.getRow());
-                                    piece.setColumn(tempcolumn);
-                                    piece.setRow(temprow);
-                                    currentPiece.disablePiece();
-                                }
-                            }
+                            Node currentNode = getNodeByCoordinate(grid, currentPiece.getColumn(), currentPiece.getRow());
+                            Node blueNode=getNodeByCoordinate(grid, bluePiece.getColumn(), bluePiece.getRow());
+
+                            GridPane.setColumnIndex(currentNode, GridPane.getColumnIndex(blueNode));
+                            GridPane.setRowIndex(currentNode, GridPane.getRowIndex(blueNode));
+                            currentPiece.setColumn(GridPane.getColumnIndex(blueNode));
+                            currentPiece.setRow(GridPane.getRowIndex(blueNode));
+
+                            GridPane.setColumnIndex(blueNode, tempcolumn);
+                            GridPane.setRowIndex(blueNode, temprow);
+                            bluePiece.setColumn(tempcolumn);
+                            bluePiece.setRow(temprow);
+
                             for(Piece piece : piecesList){
                                 piece.setIsActive(false);
                                 if(piece.getColor()=="empty"){
                                     piece.disablePiece();
                                 }
                             }
-
                         }
-
-
-
                     }
                 }
             }
-
         });
 
         primaryStage.setTitle("Checkers");
@@ -243,12 +228,10 @@ public class Checkers extends Application implements MouseListener {
             if (piece.getIsActive().getValue()==true && piece.getColor()=="blue"){
                 blueCounter=1;
             }
-            }
+        }
         if(blueCounter==0){
             return 2;
         }else{return 1;}
-
-
     }
 
     public List findMoves(Piece currentPiece, ObservableList<Piece> list){
@@ -277,7 +260,7 @@ public class Checkers extends Application implements MouseListener {
                 }
             }
             //single captures
-            if(piece.getColor() == "red") {
+            /*if(piece.getColor() == "red") {
                 if (piece.getColumn() == column-1 && piece.getRow() == row-1) {
                     for(Piece emptyPiece : list){
                         if (emptyPiece.getColumn() == column-2 && emptyPiece.getRow() == row-2 && emptyPiece.getColor()=="empty"){
@@ -303,7 +286,7 @@ public class Checkers extends Application implements MouseListener {
                         }
                     }
                 }
-            }
+            }*/
         }
         return moves;
     }

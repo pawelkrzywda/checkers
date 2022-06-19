@@ -1,14 +1,15 @@
 package com.checkers;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 
 public class Piece {
     private String color;
@@ -73,6 +74,11 @@ public class Piece {
             button.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent event) {
+                    Node node = (Node) event.getTarget();
+                    int row = GridPane.getRowIndex(node);
+                    int column = GridPane.getColumnIndex(node);
+                    System.out.println("Column: " + column + " , row: " + row);
+
                     if(!isActive.get()) {
                         button.setStyle("-fx-background-color: #FF1493;");
                         isActive.setValue(true);
@@ -129,9 +135,8 @@ public class Piece {
     }
 
     public void disablePiece(){
-
-            button.setDisable(true);
-            button.setStyle("-fx-background-color: transparent;");
+        button.setDisable(true);
+        button.setStyle("-fx-background-color: transparent;");
     }
 
     public void enablePiece(){

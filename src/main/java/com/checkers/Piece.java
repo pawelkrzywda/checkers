@@ -1,7 +1,9 @@
 package com.checkers;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -10,13 +12,12 @@ import javafx.scene.input.MouseEvent;
 
 public class Piece {
     private String color;
-    private int column;
-    private int row;
+    private IntegerProperty column = new SimpleIntegerProperty();
+    private IntegerProperty row = new SimpleIntegerProperty();
     private boolean isOnBoard=true;
+    private boolean king = false;
     private BooleanProperty isActive = new SimpleBooleanProperty();
-
     private Button button = new Button();
-
     private Image redpiece = new Image("file:src/main/resources/red.png");
     private Image bluepiece = new Image("file:src/main/resources/blue.png");
     ImageView red = new ImageView(redpiece);
@@ -24,8 +25,9 @@ public class Piece {
 
     public Piece(String color, int column, int row, boolean isActive) {
         this.color = color;
-        this.column = column;
-        this.row = row;
+        this.column.setValue(column);
+        this.row.setValue(row);
+        this.isActive.setValue(isActive);
     }
 
     public String getColor() {
@@ -33,11 +35,17 @@ public class Piece {
     }
 
     public int getColumn() {
-        return column;
+        return column.getValue();
     }
+    public IntegerProperty getObsColumn(){return column;}
 
     public int getRow() {
-        return row;
+        return row.getValue();
+    }
+    public IntegerProperty getObsRow(){return row;}
+
+    public boolean isKing() {
+        return king;
     }
 
     public Button getPiece() {
@@ -72,38 +80,36 @@ public class Piece {
                         button.setStyle("-fx-background-color: transparent;");
                         isActive.setValue(false);
                     }
-
                 }
             });
             return button;
-        } else{
-            button.setStyle("-fx-background-color: green;");
+        } else if(color == "empty"){
             button.setMaxSize(90, 90);
             button.setMinSize(90,90);
             button.setDisable(true);
             button.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent event) {
-                    if(!isActive.get()) {
+                    if(!isActive.getValue()) {
                         button.setStyle("-fx-background-color: #FF1493;");
                         isActive.setValue(true);
                     }else{
                         button.setStyle("-fx-background-color: transparent;");
                         isActive.setValue(false);
                     }
-
                 }
             });
             return button;
         }
+        return null;
     }
 
     public void setColumn(int column) {
-        this.column = column;
+        this.column.setValue(column);
     }
 
     public void setRow(int row) {
-        this.row = row;
+        this.row.setValue(row);
     }
 
     public boolean isOnBoard() {
@@ -118,13 +124,40 @@ public class Piece {
         return  isActive;
     }
 
+    public void setIsActive(boolean isActive) {
+        this.isActive.set(isActive);
+    }
+
     public void disablePiece(){
-        if(isActive.getValue() == false){
+
             button.setDisable(true);
-        }
+            button.setStyle("-fx-background-color: transparent;");
     }
 
     public void enablePiece(){
         button.setDisable(false);
+        if(color == "empty"){
+            button.setStyle("-fx-background-color: green;");
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Piece piece = (Piece) o;
+
+        if (column != piece.column) return false;
+        if (row != piece.row) return false;
+        return color.equals(piece.color);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = color.hashCode();
+        result = 31 * result + column.getValue();
+        result = 31 * result + row.getValue();
+        return result;
     }
 }

@@ -60,7 +60,6 @@ public class Piece {
                     if(!isActive.get()) {
                         button.setStyle("-fx-background-color: #FF1493;");
                         isActive.setValue(true);
-
                     }else{
                         button.setStyle("-fx-background-color: transparent;");
                         isActive.setValue(false);
@@ -132,6 +131,9 @@ public class Piece {
 
     public void setIsActive(boolean isActive) {
         this.isActive.set(isActive);
+        if(!isActive){
+            button.setStyle("-fx-background-color: transparent;");
+        }
     }
 
     public void disablePiece(){

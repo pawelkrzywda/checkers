@@ -15,7 +15,6 @@ public class Piece {
     private String color;
     private IntegerProperty column = new SimpleIntegerProperty();
     private IntegerProperty row = new SimpleIntegerProperty();
-    private boolean isOnBoard=true;
     private boolean king = false;
     private BooleanProperty isActive = new SimpleBooleanProperty();
     private Button button = new Button();
@@ -53,19 +52,6 @@ public class Piece {
         if(color == "red"){
             button.setGraphic(red);
             button.setStyle("-fx-background-color: transparent;");
-            //button.setDisable(true);
-            /*button.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-                @Override
-                public void handle(MouseEvent event) {
-                    if(!isActive.get()) {
-                        button.setStyle("-fx-background-color: #FF1493;");
-                        isActive.setValue(true);
-                    }else{
-                        button.setStyle("-fx-background-color: transparent;");
-                        isActive.setValue(false);
-                    }
-                }
-            });*/
             return button;
         }else if(color == "blue") {
             button.setGraphic(blue);
@@ -92,6 +78,7 @@ public class Piece {
             button.setMaxSize(90, 90);
             button.setMinSize(90,90);
             button.setDisable(true);
+            button.setStyle("-fx-background-color: transparent;");
             button.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent event) {
@@ -117,14 +104,6 @@ public class Piece {
         this.row.setValue(row);
     }
 
-    public boolean isOnBoard() {
-        return isOnBoard;
-    }
-
-    public void pieceKnocked(){
-        isOnBoard = false;
-    }
-
     public BooleanProperty getIsActive() {
         return  isActive;
     }
@@ -147,6 +126,8 @@ public class Piece {
             button.setStyle("-fx-background-color: green;");
         }
     }
+
+
 
     @Override
     public boolean equals(Object o) {

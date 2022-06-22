@@ -1,5 +1,6 @@
 package com.checkers;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -111,7 +112,6 @@ public class Checkers extends Application implements MouseListener {
         Piece empty6Piece = new Piece("empty", 5, 4, false);
         Piece empty7Piece = new Piece("empty", 6, 3, false);
         Piece empty8Piece = new Piece("empty", 7, 4, false);
-
         piecesList.addAll(empty1Piece, empty2Piece, empty3Piece, empty4Piece, empty5Piece, empty6Piece,
                 empty7Piece, empty8Piece);
 
@@ -134,7 +134,6 @@ public class Checkers extends Application implements MouseListener {
             row.setPercentHeight(12.5);
             grid.getRowConstraints().add(row);
         }
-
 
         piecesList.addListener(new ListChangeListener<Piece>() {
             @Override
@@ -166,9 +165,7 @@ public class Checkers extends Application implements MouseListener {
                         if (changeType == 1 && currentPiece != null && bluePiece.getIsActive().getValue()) {
                             changeType = 3;
                         }
-                        if (moves.size() == 0 && bluePiece == null && changeType == 3) {
-                            changeType = 0;
-                        }
+
 
                         if (changeType == 1) {
                             System.out.println("Change type " + changeType);
@@ -197,6 +194,9 @@ public class Checkers extends Application implements MouseListener {
                                 if (piece.getIsActive().getValue() == false && piece.getColor().equals("blue")) {
                                     piece.enablePiece();
                                 }
+                                if(piece.getIsActive().getValue() && piece.getColor().equals("blue")){
+                                    piece.enablePiece();
+                                }
                                 if (piece.getIsActive().getValue() == false && piece.getColor().equals("empty")) {
                                     piece.disablePiece();
                                 }
@@ -209,21 +209,23 @@ public class Checkers extends Application implements MouseListener {
                             int temprow = currentPiece.getRow();
                             Node redNode = null;
 
-
                             if (Math.abs(tempcolumn - bluePiece.getColumn()) == 2 && Math.abs(temprow - bluePiece.getRow()) == 2) {
                                 int redColumn = (tempcolumn + bluePiece.getColumn()) / 2;
                                 int redRow = (temprow + bluePiece.getRow()) / 2;
                                 redNode = getNodeByCoordinate(grid, redColumn, redRow);
+                                Piece pieceToDelete = null;
                                 for (Iterator<Piece> iterator = piecesList.iterator(); iterator.hasNext(); ) {
                                     Piece piece = iterator.next();
                                     if (piece.getColor().equals("red") && piece.getColumn() == redColumn && piece.getRow() == redRow) {
-                                        grid.getChildren().remove(redNode);
-                                        iterator.remove();
-                                        Piece emptyPiece = new Piece("empty", redColumn, redRow, false);
-                                        piecesList.add(emptyPiece);
-                                        grid.add(emptyPiece.getPiece(), redColumn, redRow, 1, 1);
+                                        pieceToDelete = piece;
                                     }
                                 }
+                                grid.getChildren().remove(redNode);
+                                Piece finalPieceToDelete = pieceToDelete;
+                                Piece emptyPiece = new Piece("empty", redColumn, redRow, false);
+                                Platform.runLater(()->  piecesList.remove(finalPieceToDelete));
+                                Platform.runLater(()->piecesList.add(emptyPiece));
+                                Platform.runLater(()->grid.add(emptyPiece.getPiece(), redColumn, redRow, 1, 1));
                             }
 
                             Node currentNode = getNodeByCoordinate(grid, currentPiece.getColumn(), currentPiece.getRow());
@@ -242,10 +244,9 @@ public class Checkers extends Application implements MouseListener {
                                     piece.disablePiece();
                                 }
                             }
-                            computerMove(piecesList, grid);
+                            Platform.runLater(()->computerMove(piecesList, grid));
                             return;
                         }
-
                     }
                 }
             }
@@ -333,6 +334,7 @@ public class Checkers extends Application implements MouseListener {
     }
 
     public void computerMove(ObservableList<Piece> list, GridPane grid) {
+        System.out.println("Computer's move.");
         List<Piece> moves = new LinkedList<>();
         Piece currentPiece = null;
         Piece redPiece = null;
@@ -345,7 +347,6 @@ public class Checkers extends Application implements MouseListener {
             if (piece.getColor().equals("red")) {
                 moves = findMoves("red", piece, list);
                 if (moves.size() > 0) {
-                    System.out.println("Computer's move.");
                     int move = random.nextInt(moves.size());
                     currentPiece = moves.get(move);
                     redPiece = piece;
@@ -359,21 +360,28 @@ public class Checkers extends Application implements MouseListener {
             int blueColumn = (tempcolumn + redPiece.getColumn()) / 2;
             int blueRow = (temprow + redPiece.getRow()) / 2;
             blueNode = getNodeByCoordinate(grid, blueColumn, blueRow);
-
+            Piece pieceToDelete=null;
             for (Iterator<Piece> iterator = list.iterator(); iterator.hasNext();) {
                 Piece nextPiece = iterator.next();
                 if(nextPiece.getColor().equals("blue") && nextPiece.getColumn()==blueColumn && nextPiece.getRow()==blueRow){
-                    grid.getChildren().remove(blueNode);
-                    iterator.remove();
-                    Piece emptyPiece = new Piece("empty", blueColumn, blueRow, false);
-                    list.add(emptyPiece);
-                    grid.add(emptyPiece.getPiece(), blueColumn, blueRow, 1, 1);
+                    pieceToDelete=nextPiece;
                 }
             }
+            grid.getChildren().remove(blueNode);
+            Piece finalPieceToDelete = pieceToDelete;
+            Piece emptyPiece = new Piece("empty", blueColumn, blueRow, false);
+            Platform.runLater(()->  list.remove(finalPieceToDelete));
+            Platform.runLater(()->list.add(emptyPiece));
+            Platform.runLater(()->grid.add(emptyPiece.getPiece(), blueColumn, blueRow, 1, 1));
+
         }
 
         Node currentNode = getNodeByCoordinate(grid, currentPiece.getColumn(), currentPiece.getRow());
         Node redNode=getNodeByCoordinate(grid, redPiece.getColumn(), redPiece.getRow());
+        System.out.println("red column " + redPiece.getColumn());
+        System.out.println("red row" + redPiece.getRow());
+        System.out.println("currentNode " + currentNode);
+        System.out.println("redNode " + redNode);
         GridPane.setColumnIndex(currentNode, GridPane.getColumnIndex(redNode));
         GridPane.setRowIndex(currentNode, GridPane.getRowIndex(redNode));
         currentPiece.setColumn(GridPane.getColumnIndex(redNode));
@@ -382,5 +390,12 @@ public class Checkers extends Application implements MouseListener {
         GridPane.setRowIndex(redNode, temprow);
         redPiece.setColumn(tempcolumn);
         redPiece.setRow(temprow);
+
+        for (Piece piece : list) {
+            piece.setIsActive(false);
+            if (piece.getColor().equals("empty")) {
+                piece.disablePiece();
+            }
+        }
     }
 }

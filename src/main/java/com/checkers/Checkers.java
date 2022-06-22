@@ -1,24 +1,31 @@
 package com.checkers;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import javafx.scene.control.Label;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class Checkers extends Application implements MouseListener {
 
@@ -74,54 +81,72 @@ public class Checkers extends Application implements MouseListener {
         grid.setBackground(background);
 
         ObservableList<Piece> piecesList = FXCollections.observableArrayList(piece -> new Observable[]{piece.getIsActive()});
-        Piece red1Piece = new Piece("red", 1, 0, false);
-        Piece red2Piece = new Piece("red", 3, 0, false);
-        Piece red3Piece = new Piece("red", 5, 0, false);
-        Piece red4Piece = new Piece("red", 7, 0, false);
-        Piece red5Piece = new Piece("red", 0, 1, false);
-        Piece red6Piece = new Piece("red", 2, 1, false);
-        Piece red7Piece = new Piece("red", 4, 1, false);
-        Piece red8Piece = new Piece("red", 6, 1, false);
-        Piece red9Piece = new Piece("red", 1, 2, false);
-        Piece red10Piece = new Piece("red", 3, 2, false);
-        Piece red11Piece = new Piece("red", 5, 2, false);
-        Piece red12Piece = new Piece("red", 7, 2, false);
-        piecesList.addAll(red1Piece, red2Piece, red3Piece, red4Piece, red5Piece, red6Piece, red7Piece, red8Piece,
-                red9Piece, red10Piece, red11Piece, red12Piece);
-
-        Piece blue1Piece = new Piece("blue", 0, 5, false);
-        Piece blue2Piece = new Piece("blue", 2, 5, false);
-        Piece blue3Piece = new Piece("blue", 4, 5, false);
-        Piece blue4Piece = new Piece("blue", 6, 5, false);
-        Piece blue5Piece = new Piece("blue", 1, 6, false);
-        Piece blue6Piece = new Piece("blue", 3, 6, false);
-        Piece blue7Piece = new Piece("blue", 5, 6, false);
-        Piece blue8Piece = new Piece("blue", 7, 6, false);
-        Piece blue9Piece = new Piece("blue", 0, 7, false);
-        Piece blue10Piece = new Piece("blue", 2, 7, false);
-        Piece blue11Piece = new Piece("blue", 4, 7, false);
-        Piece blue12Piece = new Piece("blue", 6, 7, false);
-        piecesList.addAll(blue1Piece, blue2Piece, blue3Piece, blue4Piece, blue5Piece, blue6Piece, blue7Piece,
-                blue8Piece, blue9Piece, blue10Piece, blue11Piece, blue12Piece);
-
-        Piece empty1Piece = new Piece("empty", 0, 3, false);
-        Piece empty2Piece = new Piece("empty", 1, 4, false);
-        Piece empty3Piece = new Piece("empty", 2, 3, false);
-        Piece empty4Piece = new Piece("empty", 3, 4, false);
-        Piece empty5Piece = new Piece("empty", 4, 3, false);
-        Piece empty6Piece = new Piece("empty", 5, 4, false);
-        Piece empty7Piece = new Piece("empty", 6, 3, false);
-        Piece empty8Piece = new Piece("empty", 7, 4, false);
-        piecesList.addAll(empty1Piece, empty2Piece, empty3Piece, empty4Piece, empty5Piece, empty6Piece,
-                empty7Piece, empty8Piece);
+        for(int i=0;i<8;i++){
+            for(int j=0;j<8;j++){
+                if((j==0 && i%2!=0) || (j==2 && i%2!=0)){
+                    piecesList.add(new Piece("red", i, j,false));
+                }else if((j==3 || j==4) && (i+j)%2!=0){
+                    piecesList.add(new Piece("empty", i, j,false));
+                }else if((j==5 && i%2==0) || (j==7 && i%2==0)){
+                    piecesList.add(new Piece("blue", i, j,false));
+                }else if(j==1 && i%2==0){
+                    piecesList.add(new Piece("red", i, j,false));
+                }else if(j==6 && i%2!=0){
+                    piecesList.add(new Piece("blue", i, j,false));
+                }
+            }
+        }
 
         for (Piece piece : piecesList) {
             grid.add(piece.getPiece(), piece.getColumn(), piece.getRow(), 1, 1);
         }
 
         Scene scene = new Scene(grid, 800, 800, Color.BLACK);
-        grid.setMaxSize(800, 800);
-        grid.setMinSize(800, 800);
+        primaryStage.setTitle("Checkers");
+        primaryStage.setResizable(false);
+
+        //Start menu
+        Label label1= new Label("Welcome to Checkers game. Press the button bellow to start game:");
+        Button button1= new Button("Start game");
+        button1.setOnAction(e -> primaryStage.setScene(scene));
+        VBox layout1 = new VBox(20);
+        layout1.getChildren().addAll(label1, button1);
+        layout1.setAlignment(Pos.CENTER);
+        Scene startScene= new Scene(layout1, 800, 800);
+        primaryStage.setScene(startScene);
+        primaryStage.show();
+
+        //End menu
+        Label label2= new Label("Game ended. Press the button below to start a new game:");
+        Button button2= new Button("Start new game");
+        button2.setOnAction(e -> {
+            grid.getChildren().remove(0, grid.getChildren().size());
+            piecesList.remove(0, piecesList.size());
+            //creating new pieces and adding them to grid and piecesList
+            for(int i=0;i<8;i++){
+                for(int j=0;j<8;j++){
+                    if((j==0 && i%2!=0) || (j==2 && i%2!=0)){
+                        piecesList.add(new Piece("red", i, j,false));
+                    }else if((j==3 || j==4) && (i+j)%2!=0){
+                        piecesList.add(new Piece("empty", i, j,false));
+                    }else if((j==5 && i%2==0) || (j==7 && i%2==0)){
+                        piecesList.add(new Piece("blue", i, j,false));
+                    }else if(j==1 && i%2==0){
+                        piecesList.add(new Piece("red", i, j,false));
+                    }else if(j==6 && i%2!=0){
+                        piecesList.add(new Piece("blue", i, j,false));
+                    }
+                }
+            }
+            for (Piece piece : piecesList) {
+                grid.add(piece.getPiece(), piece.getColumn(), piece.getRow(), 1, 1);
+            }
+            primaryStage.setScene(scene);
+        });
+        VBox layout2 = new VBox(20);
+        layout2.getChildren().addAll(label2, button2);
+        layout2.setAlignment(Pos.CENTER);
+        Scene endScene= new Scene(layout2, 800, 800);
 
         for (int i = 0; i < 8; i++) {
             ColumnConstraints column = new ColumnConstraints();
@@ -238,24 +263,26 @@ public class Checkers extends Application implements MouseListener {
                             GridPane.setRowIndex(blueNode, temprow);
                             bluePiece.setColumn(tempcolumn);
                             bluePiece.setRow(temprow);
+
                             for (Piece piece : piecesList) {
                                 piece.setIsActive(false);
                                 if (piece.getColor().equals("empty")) {
                                     piece.disablePiece();
                                 }
                             }
-                            Platform.runLater(()->computerMove(piecesList, grid));
+
+                            final KeyFrame kf1 = new KeyFrame(Duration.seconds(0.1), e -> System.out.println("pause 0,1s"));
+                            final KeyFrame kf2 = new KeyFrame(Duration.seconds(0.5), e -> {if(gameEnded(piecesList)){primaryStage.setScene(endScene);}});
+                            final KeyFrame kf3 = new KeyFrame(Duration.seconds(0.1), e -> computerMove(piecesList, grid));
+                            final KeyFrame kf4 = new KeyFrame(Duration.seconds(0.1), e -> {if(gameEnded(piecesList)){primaryStage.setScene(endScene);}});
+                            final Timeline timeline = new Timeline(kf1, kf2, kf3, kf4);
+                            Platform.runLater(timeline::play);
                             return;
                         }
                     }
                 }
             }
         });
-
-        primaryStage.setTitle("Checkers");
-        primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
-        primaryStage.show();
     }
 
     public int areAllInactive(ObservableList<Piece> list) {
@@ -334,6 +361,12 @@ public class Checkers extends Application implements MouseListener {
     }
 
     public void computerMove(ObservableList<Piece> list, GridPane grid) {
+        int redCounter=0;
+        for (Piece piece : list) {
+            if(piece.getColor().equals("red")){
+                redCounter++;
+            }
+        }
         System.out.println("Computer's move.");
         List<Piece> moves = new LinkedList<>();
         Piece currentPiece = null;
@@ -367,6 +400,7 @@ public class Checkers extends Application implements MouseListener {
                     pieceToDelete=nextPiece;
                 }
             }
+
             grid.getChildren().remove(blueNode);
             Piece finalPieceToDelete = pieceToDelete;
             Piece emptyPiece = new Piece("empty", blueColumn, blueRow, false);
@@ -378,10 +412,6 @@ public class Checkers extends Application implements MouseListener {
 
         Node currentNode = getNodeByCoordinate(grid, currentPiece.getColumn(), currentPiece.getRow());
         Node redNode=getNodeByCoordinate(grid, redPiece.getColumn(), redPiece.getRow());
-        System.out.println("red column " + redPiece.getColumn());
-        System.out.println("red row" + redPiece.getRow());
-        System.out.println("currentNode " + currentNode);
-        System.out.println("redNode " + redNode);
         GridPane.setColumnIndex(currentNode, GridPane.getColumnIndex(redNode));
         GridPane.setRowIndex(currentNode, GridPane.getRowIndex(redNode));
         currentPiece.setColumn(GridPane.getColumnIndex(redNode));
@@ -397,5 +427,28 @@ public class Checkers extends Application implements MouseListener {
                 piece.disablePiece();
             }
         }
+    }
+
+    public boolean gameEnded(ObservableList<Piece> list){
+        int redCounter=0;
+        int blueCounter=0;
+        int redMoves=0;
+        int blueMoves=0;
+        for (Piece piece : list) {
+            if (piece.getColor().equals("red")) {
+                if(findMoves("red", piece, list).size()>0){
+                    redMoves++;
+                }
+                redCounter++;
+            } else if (piece.getColor().equals("blue")){
+                if(findMoves("blue", piece, list).size()>0){
+                    blueMoves++;
+                }
+                blueCounter++;
+            }
+        }
+        if(redCounter==0 || blueCounter==0 || redMoves==0 || blueMoves==0){
+            return true;
+        }else{return false;}
     }
 }

@@ -62,8 +62,6 @@ public class Piece {
                     Node node = (Node) event.getTarget();
                     int row = GridPane.getRowIndex(node);
                     int column = GridPane.getColumnIndex(node);
-                    System.out.println("Column: " + column + " , row: " + row);
-
                     if(!isActive.get()) {
                         button.setStyle("-fx-background-color: #FF1493;");
                         isActive.setValue(true);

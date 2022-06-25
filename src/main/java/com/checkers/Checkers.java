@@ -16,6 +16,7 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.control.Label;
@@ -39,6 +40,7 @@ public class Checkers extends Application implements MouseListener {
     }
 
     private Image imageback = new Image("file:src/main/resources/board.png");
+    private String statistics = "";
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -60,8 +62,6 @@ public class Checkers extends Application implements MouseListener {
     @Override
     public void mouseReleased(MouseEvent e) {
     }
-
-    public boolean game = true;
 
     public static void main(String[] args) {
         launch(args);
@@ -107,7 +107,12 @@ public class Checkers extends Application implements MouseListener {
 
         //Start menu
         Label label1= new Label("Welcome to Checkers game. Press the button bellow to start game:");
+        label1.setScaleX(2);
+        label1.setScaleY(2);
+        label1.setPadding(new Insets(50));
         Button button1= new Button("Start game");
+        button1.setScaleX(2);
+        button1.setScaleY(2);
         button1.setOnAction(e -> primaryStage.setScene(scene));
         VBox layout1 = new VBox(20);
         layout1.getChildren().addAll(label1, button1);
@@ -117,8 +122,16 @@ public class Checkers extends Application implements MouseListener {
         primaryStage.show();
 
         //End menu
-        Label label2= new Label("Game ended. Press the button below to start a new game:");
+        Label label2= new Label("Game ended." + "\n" +
+                statistics + "\n" +
+                "Press the button below to start a new game:");
+        label2.setScaleX(2);
+        label2.setScaleY(2);
+        label2.setPadding(new Insets(50));
+        label2.setTextAlignment(TextAlignment.CENTER);
         Button button2= new Button("Start new game");
+        button2.setScaleX(2);
+        button2.setScaleY(2);
         button2.setOnAction(e -> {
             grid.getChildren().remove(0, grid.getChildren().size());
             piecesList.remove(0, piecesList.size());
@@ -271,11 +284,22 @@ public class Checkers extends Application implements MouseListener {
                                 }
                             }
 
-                            final KeyFrame kf1 = new KeyFrame(Duration.seconds(0.1), e -> System.out.println("pause 0,1s"));
-                            final KeyFrame kf2 = new KeyFrame(Duration.seconds(0.5), e -> {if(gameEnded(piecesList)){primaryStage.setScene(endScene);}});
-                            final KeyFrame kf3 = new KeyFrame(Duration.seconds(0.1), e -> computerMove(piecesList, grid));
-                            final KeyFrame kf4 = new KeyFrame(Duration.seconds(0.1), e -> {if(gameEnded(piecesList)){primaryStage.setScene(endScene);}});
-                            final Timeline timeline = new Timeline(kf1, kf2, kf3, kf4);
+                            final KeyFrame kf1 = new KeyFrame(Duration.seconds(0.5), e -> {if(gameEnded(piecesList)){
+                                statistics=gameStatistics(piecesList);
+                                label2.setText("Game ended." + "\n" +
+                                        statistics + "\n" +
+                                        "Press the button below to start a new game:");
+                                primaryStage.setScene(endScene);
+                            }});
+                            final KeyFrame kf2 = new KeyFrame(Duration.seconds(0.1), e -> computerMove(piecesList, grid));
+                            final KeyFrame kf3 = new KeyFrame(Duration.seconds(0.1), e -> {if(gameEnded(piecesList)){
+                                statistics=gameStatistics(piecesList);
+                                label2.setText("Game ended." + "\n" +
+                                        statistics + "\n" +
+                                        "Press the button below to start a new game:");
+                                primaryStage.setScene(endScene);
+                            }});
+                            final Timeline timeline = new Timeline(kf1, kf2, kf3);
                             Platform.runLater(timeline::play);
                             return;
                         }
@@ -450,5 +474,32 @@ public class Checkers extends Application implements MouseListener {
         if(redCounter==0 || blueCounter==0 || redMoves==0 || blueMoves==0){
             return true;
         }else{return false;}
+    }
+
+    public String gameStatistics(ObservableList<Piece> list){
+        int redCounter=0;
+        int blueCounter=0;
+        int redMoves=0;
+        int blueMoves=0;
+        for (Piece piece : list) {
+            if (piece.getColor().equals("red")) {
+                if(findMoves("red", piece, list).size()>0){
+                    redMoves++;
+                }
+                redCounter++;
+            } else if (piece.getColor().equals("blue")){
+                if(findMoves("blue", piece, list).size()>0){
+                    blueMoves++;
+                }
+                blueCounter++;
+            }
+        }
+        if(redCounter==0){
+            return "You won!";
+        }else if(blueCounter==0){
+            return "You lost.";
+        }else if(redMoves==0 || blueMoves==0){
+            return "No more available moves.";
+        }else{return " ";}
     }
 }
